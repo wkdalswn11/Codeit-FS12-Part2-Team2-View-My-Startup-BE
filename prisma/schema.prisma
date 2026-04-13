@@ -1,13 +1,125 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" // mysql / sqlite 등 사용 환경에 맞게 변경
+  url      = env("DATABASE_URL")
+}
+
+/////////////////////////////////////////////////
+// ENUM
+/////////////////////////////////////////////////
+
+enum CompanyCategory {
+  IT
+  FINANCE
+  HEALTHCARE
+  EDUCATION
+  ECOMMERCE
+  OTHER
+}
+
+enum InvestmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/////////////////////////////////////////////////
+// USER
+/////////////////////////////////////////////////
+
+model User {
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
+
+  investments Investment[]
+  favorites   Favorite[]
+  comparisons Comparison[]
+}
+
+/////////////////////////////////////////////////
+// COMPANY
+/////////////////////////////////////////////////
+
+model Company {
+  id             Int      @id @default(autoincrement())
+  name           String
+  businessNumber String   @unique
+  address        String
+  description    String
+  revenue        Int
+  employeeCount  Int
+  categoryName   CompanyCategory
+
+  logo           String?
+
+  baseInvestment Int      @default(0) // ✅ 추가 (기본 투자금)
+
+  investments Investment[]
+  favorites   Favorite[]
+  comparisons Comparison[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/////////////////////////////////////////////////
+// INVESTMENT
+/////////////////////////////////////////////////
+
+model Investment {
+  id        Int      @id @default(autoincrement())
+
+  userId    Int
+  companyId Int
+
+  user      User    @relation(fields: [userId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
+
+  amount    Int
+  comment   String
+
+  status    InvestmentStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/////////////////////////////////////////////////
+// FAVORITE (즐겨찾기)
+/////////////////////////////////////////////////
+
+model Favorite {
+  id        Int @id @default(autoincrement())
+
+  userId    Int
+  companyId Int
+
+  user      User    @relation(fields: [userId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, companyId]) // 중복 방지
+}
+
+/////////////////////////////////////////////////
+// COMPARISON (비교 기업)
+/////////////////////////////////////////////////
+
+model Comparison {
+  id        Int @id @default(autoincrement())
+
+  userId    Int
+  companyId Int
+
+  user      User    @relation(fields: [userId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, companyId]) // 중복 선택 방지
 }
