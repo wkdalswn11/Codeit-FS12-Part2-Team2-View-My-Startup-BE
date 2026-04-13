@@ -3,21 +3,22 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const getCompaniesService = async (query) => {
-  const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 10;
-  const sort = query.sort || "revenue_desc";
+  const page = Math.max(Number(query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 50);
   const keyword = query.keyword || "";
 
   const offset = (page - 1) * limit;
 
-  const where = {
-    name: {
-      contains: keyword,
-      mode: "insensitive",
-    },
-  };
+  const where = keyword
+    ? {
+        name: {
+          contains: keyword,
+          mode: "insensitive",
+        },
+      }
+    : {};
 
-  const orderBy = {
+  const sortOrder = {
     revenue_desc: { revenue: "desc" },
     revenue_asc: { revenue: "asc" },
     employeeCount_desc: { employeeCount: "desc" },
@@ -26,12 +27,12 @@ export const getCompaniesService = async (query) => {
     totalInvestment_asc: { totalInvestment: "asc" },
   };
 
-  const sortOrder = orderBy[sort];
+  const sort = sortOrder[query.sort] || sortOrder.revenue_desc;
 
   const [companies, total] = await Promise.all([
     prisma.company.findMany({
       where,
-      orderBy: sortOrder,
+      orderBy: sort,
       skip: offset,
       take: limit,
     }),

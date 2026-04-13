@@ -1,4 +1,4 @@
-import getCompaniesService from "../services/company.service.js";
+import { getCompaniesService } from "../services/company.service.js";
 
 export const getCompaniesController = async (req, res) => {
   try {
