@@ -9,12 +9,24 @@ export const addFavoriteService = async (userId, companyId) => {
     },
   });
   if (!company) {
-    throw new Error("존재하지 않는 기업입니다");
+    const error = new Error("존재하지 않는 기업입니다");
+    error.status = 404;
+    throw error;
   }
-  await prisma.favorite.create({
-    data: {
-      userId,
-      companyId,
-    },
-  });
+  try {
+    const favorite = await prisma.favorite.create({
+      data: {
+        userId,
+        companyId,
+      },
+    });
+    return favorite;
+  } catch (error) {
+    if (error.code === "P2002") {
+      const err = new Error("이미 선택된 기업입니다");
+      err.status = 400;
+      throw err;
+    }
+    throw error;
+  }
 };
