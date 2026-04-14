@@ -14,13 +14,13 @@ export const addFavoriteService = async (userId, companyId) => {
     throw error;
   }
   try {
-    const favorite = await prisma.favorite.create({
+    await prisma.favorite.create({
       data: {
         userId,
         companyId,
       },
     });
-    return favorite;
+    return company;
   } catch (error) {
     if (error.code === "P2002") {
       const err = new Error("이미 선택된 기업입니다");
@@ -30,3 +30,5 @@ export const addFavoriteService = async (userId, companyId) => {
     throw error;
   }
 };
+
+export const getFavoritesService = async (userId) => {};
