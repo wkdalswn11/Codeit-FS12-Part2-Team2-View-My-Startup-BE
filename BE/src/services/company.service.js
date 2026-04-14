@@ -6,17 +6,22 @@ export const getCompaniesService = async (query) => {
   const page = Math.max(Number(query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 50);
   const keyword = query.keyword || "";
+  const ids = query.ids
+    ? query.ids.split(",").map((id) => Number(id.trim()))
+    : [];
 
   const offset = (page - 1) * limit;
 
-  const where = keyword
-    ? {
-        name: {
-          contains: keyword,
-          mode: "insensitive",
-        },
-      }
-    : {};
+  let where = {};
+
+  if (ids.length > 0) {
+    where.id = { in: ids };
+  } else if (keyword) {
+    where.name = {
+      contains: keyword,
+      mode: "insensitive",
+    };
+  }
 
   const sortOrder = {
     revenue_desc: { revenue: "desc" },
@@ -29,12 +34,12 @@ export const getCompaniesService = async (query) => {
 
   const sort = sortOrder[query.sort] || sortOrder.revenue_desc;
 
+  const isIdsQuery = ids.length > 0;
   const [companies, total] = await Promise.all([
     prisma.company.findMany({
       where,
       orderBy: sort,
-      skip: offset,
-      take: limit,
+      ...(isIdsQuery ? {} : { skip: offset, take: limit }),
     }),
 
     prisma.company.count({
@@ -45,13 +50,14 @@ export const getCompaniesService = async (query) => {
   const data = companies.map((company, index) => {
     return {
       id: company.id,
+      logo: company.logo,
       name: company.name,
-      category: company.category,
+      category: company.categoryName,
       description: company.description,
       revenue: company.revenue,
       employeeCount: company.employeeCount,
       totalInvestment: company.baseInvestment,
-      rank: offset + index + 1,
+      ...(isIdsQuery ? {} : { rank: offset + index + 1 }),
     };
   });
 
