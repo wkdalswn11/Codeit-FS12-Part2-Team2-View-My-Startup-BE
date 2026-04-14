@@ -26,6 +26,9 @@ export const deleteFavoriteController = async (req, res) => {
   try {
     const userId = 1;
     const companyId = Number(req.params.companyId);
-    await deleteFavoriteService();
-  } catch (error) {}
+    await deleteFavoriteService(userId, companyId);
+    res.status(200).json({ message: "기업이 선택 해제 되었습니다." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

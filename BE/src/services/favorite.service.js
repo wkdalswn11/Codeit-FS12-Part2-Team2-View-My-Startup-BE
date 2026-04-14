@@ -44,4 +44,13 @@ export const getFavoritesService = async (userId) => {
   return companyIds.map((company) => company.companyId);
 };
 
-export const deleteFavoriteService = async (userId, companyId) => {};
+export const deleteFavoriteService = async (userId, companyId) => {
+  await prisma.favorite.delete({
+    where: {
+      userId_companyId: {
+        userId,
+        companyId,
+      },
+    },
+  });
+};
