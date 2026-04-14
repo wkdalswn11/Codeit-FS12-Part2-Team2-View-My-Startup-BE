@@ -22,3 +22,10 @@ export const getFavoritesController = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+export const deleteFavoriteController = async (req, res) => {
+  try {
+    const userId = 1;
+    const companyId = Number(req.params.companyId);
+    await deleteFavoriteService();
+  } catch (error) {}
+};

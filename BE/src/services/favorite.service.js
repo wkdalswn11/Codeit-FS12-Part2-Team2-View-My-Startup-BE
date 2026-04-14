@@ -31,4 +31,17 @@ export const addFavoriteService = async (userId, companyId) => {
   }
 };
 
-export const getFavoritesService = async (userId) => {};
+export const getFavoritesService = async (userId) => {
+  const companyIds = await prisma.favorite.findMany({
+    where: {
+      userId,
+    },
+    select: {
+      companyId: true,
+    },
+  });
+
+  return companyIds.map((company) => company.companyId);
+};
+
+export const deleteFavoriteService = async (userId, companyId) => {};
