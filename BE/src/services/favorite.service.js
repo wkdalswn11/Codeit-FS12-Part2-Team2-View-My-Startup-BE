@@ -13,22 +13,47 @@ export const addFavoriteService = async (userId, companyId) => {
     error.status = 404;
     throw error;
   }
-  try {
+
+  await prisma.favorite.updateMany({
+    where: {
+      userId,
+      isActive: true,
+    },
+    data: {
+      isActive: false,
+    },
+  });
+
+  const existing = await prisma.favorite.findUnique({
+    where: {
+      userId_companyId: {
+        userId,
+        companyId,
+      },
+    },
+  });
+
+  if (existing) {
+    await prisma.favorite.update({
+      where: {
+        userId_companyId: { userId, companyId },
+      },
+      data: {
+        isActive: true,
+        lastSelectedAt: new Date(),
+      },
+    });
+  } else {
     await prisma.favorite.create({
       data: {
         userId,
         companyId,
+        isActive: true,
       },
     });
-    return company;
-  } catch (error) {
-    if (error.code === "P2002") {
-      const err = new Error("이미 선택된 기업입니다");
-      err.status = 400;
-      throw err;
-    }
-    throw error;
   }
+
+  return company;
 };
 
 export const getFavoritesService = async (userId) => {
@@ -45,12 +70,12 @@ export const getFavoritesService = async (userId) => {
 };
 
 export const deleteFavoriteService = async (userId, companyId) => {
-  await prisma.favorite.delete({
+  await prisma.favorite.update({
     where: {
-      userId_companyId: {
-        userId,
-        companyId,
-      },
+      userId_companyId: { userId, companyId },
+    },
+    data: {
+      isActive: false,
     },
   });
 };
