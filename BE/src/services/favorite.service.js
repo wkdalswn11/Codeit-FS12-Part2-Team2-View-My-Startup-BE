@@ -80,3 +80,23 @@ export const deleteFavoriteService = async (userId, companyId) => {
     },
   });
 };
+
+export const getLastFavoriteService = async (userId) => {
+  const [companyIds, total] = await Promise.all([
+    prisma.favorite.findMany({
+      where: { userId, isActive: false },
+      orderBy: { lastSelectedAt: "desc" },
+      select: {
+        companyId: true,
+      },
+    }),
+
+    prisma.favorite.count({
+      where: { userId, isActive: false },
+    }),
+  ]);
+
+  const ids = companyIds.map((company) => company.companyId);
+
+  return { ids, total };
+};
