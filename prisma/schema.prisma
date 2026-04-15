@@ -93,15 +93,18 @@ model Investment {
 /////////////////////////////////////////////////
 
 model Favorite {
-  id        Int @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
 
-  userId    Int
-  companyId Int
+  userId         Int
+  companyId      Int
 
-  user      User    @relation(fields: [userId], references: [id])
-  company   Company @relation(fields: [companyId], references: [id])
+  user           User     @relation(fields: [userId], references: [id])
+  company        Company  @relation(fields: [companyId], references: [id])
 
-  createdAt DateTime @default(now())
+  isActive       Boolean  @default(false)
+  lastSelectedAt DateTime @default(now())
+
+  createdAt      DateTime @default(now())
 
   @@unique([userId, companyId]) // 중복 방지
 }
