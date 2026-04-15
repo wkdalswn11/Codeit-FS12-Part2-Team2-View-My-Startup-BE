@@ -2,6 +2,7 @@ import {
   addFavoriteService,
   deleteFavoriteService,
   getFavoritesService,
+  getLastFavoriteService,
 } from "../services/favorite.service.js";
 
 export const addFavoriteController = async (req, res) => {
