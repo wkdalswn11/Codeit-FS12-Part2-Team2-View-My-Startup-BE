@@ -60,6 +60,7 @@ export const getFavoritesService = async (userId) => {
   const companyIds = await prisma.favorite.findMany({
     where: {
       userId,
+      isActive: true,
     },
     select: {
       companyId: true,

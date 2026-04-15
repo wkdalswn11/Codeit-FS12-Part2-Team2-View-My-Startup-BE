@@ -1,12 +1,13 @@
 import {
   addFavoriteService,
+  deleteFavoriteService,
   getFavoritesService,
 } from "../services/favorite.service.js";
 
 export const addFavoriteController = async (req, res) => {
   try {
     const companyId = Number(req.body.companyId);
-    const userId = 1;
+    const userId = Number(req.params.userId);
     const company = await addFavoriteService(userId, companyId);
     res.status(201).json({ message: "기업이 선택 되었습니다", data: company });
   } catch (error) {
@@ -15,7 +16,7 @@ export const addFavoriteController = async (req, res) => {
 };
 export const getFavoritesController = async (req, res) => {
   try {
-    const userId = 1;
+    const userId = 10;
     const companyIds = await getFavoritesService(userId);
     res.status(200).json({ data: companyIds });
   } catch (error) {
@@ -24,7 +25,7 @@ export const getFavoritesController = async (req, res) => {
 };
 export const deleteFavoriteController = async (req, res) => {
   try {
-    const userId = 1;
+    const userId = Number(req.params.userId);
     const companyId = Number(req.params.companyId);
     await deleteFavoriteService(userId, companyId);
     res.status(200).json({ message: "기업이 선택 해제 되었습니다." });
