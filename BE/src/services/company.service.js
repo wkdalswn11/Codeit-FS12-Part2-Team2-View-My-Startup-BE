@@ -70,3 +70,34 @@ export const getCompaniesService = async (query) => {
 
   return { data, meta };
 };
+
+export const getCompanyByIdService = async (companyId) => {
+  const [company, totalInvestment] = await Promise.all([
+    prisma.company.findUnique({
+      where: { id: companyId },
+    }),
+    prisma.investment.aggregate({
+      where: { companyId },
+      _sum: { amount: true },
+    }),
+  ]);
+
+  if (!company) {
+    const error = new Error("존재하지 않는 기업입니다");
+    error.status = 404;
+    throw error;
+  }
+
+  return {
+    data: {
+      id: company.id,
+      logo: company.logo,
+      name: company.name,
+      category: company.categoryName,
+      description: company.description,
+      revenue: company.revenue,
+      employeeCount: company.employeeCount,
+      totalInvestment: totalInvestment._sum.amount ?? 0,
+    },
+  };
+};
