@@ -38,7 +38,7 @@ export const getLastFavoriteController = async (req, res) => {
   try {
     const userId = Number(req.params.userId);
     const result = await getLastFavoriteService(userId);
-    res.status(200).json({ data: result });
+    res.status(200).json({ data: result.data, total: result.total });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
