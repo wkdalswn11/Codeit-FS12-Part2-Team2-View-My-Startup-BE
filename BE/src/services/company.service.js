@@ -5,17 +5,11 @@ const prisma = new PrismaClient();
 
 export const getCompaniesService = async (query) => {
   const keyword = query.keyword || "";
-  const ids = query.ids
-    ? query.ids.split(",").map((id) => Number(id.trim()))
-    : [];
-
   const { page, limit, offset } = getPagination(query);
 
   let where = {};
 
-  if (ids.length > 0) {
-    where.id = { in: ids };
-  } else if (keyword) {
+  if (keyword) {
     where.name = {
       contains: keyword,
       mode: "insensitive",
@@ -27,18 +21,22 @@ export const getCompaniesService = async (query) => {
     revenue_asc: { revenue: "asc" },
     employeeCount_desc: { employeeCount: "desc" },
     employeeCount_asc: { employeeCount: "asc" },
-    totalInvestment_desc: { totalInvestment: "desc" },
-    totalInvestment_asc: { totalInvestment: "asc" },
+    baseInvestment_desc: { baseInvestment: "desc" },
+    baseInvestment_asc: { baseInvestment: "asc" },
+    siteInvestment_desc: { siteInvestment: "desc" },
+    siteInvestment_asc: { siteInvestment: "asc" },
+    favoriteCount_desc: { favoriteCount: "desc" },
+    favoriteCount_asc: { favoriteCount: "asc" },
   };
 
   const sort = sortOrder[query.sort] || sortOrder.revenue_desc;
 
-  const isIdsQuery = ids.length > 0;
   const [companies, total] = await Promise.all([
     prisma.company.findMany({
       where,
       orderBy: sort,
-      ...(isIdsQuery ? {} : { skip: offset, take: limit }),
+      skip: offset,
+      take: limit,
     }),
 
     prisma.company.count({
@@ -55,8 +53,11 @@ export const getCompaniesService = async (query) => {
       description: company.description,
       revenue: company.revenue,
       employeeCount: company.employeeCount,
-      totalInvestment: company.baseInvestment,
-      ...(isIdsQuery ? {} : { rank: offset + index + 1 }),
+      baseInvestment: company.baseInvestment,
+      siteInvestment: company.siteInvestment,
+      favoriteCount: company.favoriteCount,
+      compareCount: company.compareCount,
+      rank: offset + index + 1,
     };
   });
 
@@ -108,6 +109,7 @@ export const getCompanyInvestmentsService = async (companyId, query) => {
 
   const data = investmentList.map((inv, index) => {
     return {
+      id: inv.id,
       userName: inv.user?.name ?? null,
       amount: inv.amount,
       comment: inv.comment,
