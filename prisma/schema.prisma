@@ -56,7 +56,8 @@ model Company {
 
   logo           String?
 
-  baseInvestment Int      @default(0) // ✅ 추가 (기본 투자금)
+  baseInvestment Int      @default(0) // 실제 투자금 (고정)
+  siteInvestment Int      @default(0) // 사이트 투자금 (유저 투자 누적)
 
   investments Investment[]
   favorites   Favorite[]

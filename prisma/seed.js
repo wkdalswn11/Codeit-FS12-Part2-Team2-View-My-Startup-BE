@@ -1,80 +1,37 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, InvestmentStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 /////////////////////////////////////////////////
-// 카테고리
+// 유저 데이터
 /////////////////////////////////////////////////
-const categories = ["IT", "FINANCE", "HEALTHCARE", "EDUCATION", "ECOMMERCE"];
-
-const companyNames = [
-  "코드잇",
-  "랩스",
-  "네오테크",
-  "알파소프트",
-  "블루웨이브",
-  "핀테크랩",
-  "헬스브릿지",
-  "에듀플러스",
-  "스마트로직",
-  "클라우드허브",
-  "넥스트AI",
-  "데이터링크",
-  "이노베이션X",
-  "그린에너지솔루션",
-  "메디케어랩",
-  "디지털코어",
-  "테크플로우",
-  "유니콘스타트업",
-  "비전소프트",
-  "오픈플랫폼",
-  "브레인테크",
-  "퀀텀시스템즈",
-  "로보틱스랩",
-  "에이아이웍스",
-  "스페이스테크",
-  "커머스허브",
-  "플랫폼엑스",
-  "에코테크놀로지",
-  "인사이트랩",
-  "퓨처소프트",
+const users = [
+  { name: "김민준", email: "minjun.kim@example.com" },
+  { name: "이서연", email: "seoyeon.lee@example.com" },
+  { name: "박지훈", email: "jihoon.park@example.com" },
+  { name: "최지우", email: "jiwoo.choi@example.com" },
+  { name: "정도윤", email: "doyun.jung@example.com" },
+  { name: "한예은", email: "yeeun.han@example.com" },
+  { name: "오준서", email: "junseo.oh@example.com" },
+  { name: "윤하은", email: "haeun.yoon@example.com" },
+  { name: "서현우", email: "hyunwoo.seo@example.com" },
+  { name: "강다은", email: "daeun.kang@example.com" },
 ];
 
 /////////////////////////////////////////////////
-// 로고 (실제 도메인 → 깨짐 방지)
+// 유틸 함수
 /////////////////////////////////////////////////
-const logos = [
-  "google.com",
-  "amazon.com",
-  "microsoft.com",
-  "apple.com",
-  "meta.com",
-  "netflix.com",
-];
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
-/////////////////////////////////////////////////
-// 데이터 생성
-/////////////////////////////////////////////////
-const companies = companyNames.map((name, i) => {
-  return {
-    name,
-    businessNumber: `100-00-${10000 + i}`,
-    address: "서울특별시 강남구",
-    description: `${name}는 혁신적인 기술 기반 스타트업입니다.`,
+function shuffle(array) {
+  return [...array].sort(() => Math.random() - 0.5);
+}
 
-    // 현실적인 랜덤값
-    revenue: Math.floor(Math.random() * 90000000) + 10000000, // 최소 1천만
-    employeeCount: Math.floor(Math.random() * 90) + 10, // 최소 10명
-
-    categoryName: categories[Math.floor(Math.random() * categories.length)],
-
-    // 로고
-    logo: `https://logo.clearbit.com/${logos[i % logos.length]}`,
-
-    // 기본 투자금
-    baseInvestment: Math.floor(Math.random() * 10000000),
-  };
-});
+function pickRandomItems(array, count) {
+  return shuffle(array).slice(0, count);
+}
 
 /////////////////////////////////////////////////
 // 실행
@@ -82,15 +39,124 @@ const companies = companyNames.map((name, i) => {
 async function main() {
   console.log("🌱 Seed 시작");
 
-  // 기존 데이터 삭제 (중복 방지)
-  await prisma.company.deleteMany();
+  // 회사는 이미 있으므로 삭제/생성하지 않음
+  // 관계 테이블 + 유저만 초기화
+  await prisma.comparison.deleteMany();
+  await prisma.favorite.deleteMany();
+  await prisma.investment.deleteMany();
+  await prisma.user.deleteMany();
 
-  // 데이터 생성
-  await prisma.company.createMany({
-    data: companies,
+  //////////////////////////////////////////////////
+  // User 생성
+  //////////////////////////////////////////////////
+  await prisma.user.createMany({
+    data: users,
   });
 
-  console.log("✅ 회사 30개 생성 완료");
+  const createdUsers = await prisma.user.findMany({
+    orderBy: { id: "asc" },
+  });
+
+  const companies = await prisma.company.findMany({
+    orderBy: { id: "asc" },
+  });
+
+  if (companies.length === 0) {
+    throw new Error(
+      "Company 데이터가 없습니다. 먼저 company seed를 실행하세요.",
+    );
+  }
+
+  //////////////////////////////////////////////////
+  // Investment 생성 (총 10개 정도)
+  //////////////////////////////////////////////////
+  const investments = [];
+
+  for (let i = 0; i < 10; i++) {
+    const user = createdUsers[i % createdUsers.length];
+    const company = companies[getRandomInt(0, companies.length - 1)];
+
+    investments.push({
+      userId: user.id,
+      companyId: company.id,
+      amount: getRandomInt(100000, 5000000),
+      comment: `${user.name}님의 ${company.name} 투자입니다.`,
+      status: [
+        InvestmentStatus.PENDING,
+        InvestmentStatus.APPROVED,
+        InvestmentStatus.REJECTED,
+      ][getRandomInt(0, 2)],
+    });
+  }
+
+  await prisma.investment.createMany({
+    data: investments,
+  });
+
+  //////////////////////////////////////////////////
+  // Favorite 생성
+  // 유저당 1개는 true, 나머지는 false
+  // 최근 선택 순서는 lastSelectedAt으로 관리
+  //////////////////////////////////////////////////
+  const favorites = [];
+
+  for (const user of createdUsers) {
+    // 유저당 3~5개 기업 이력 생성
+    const selectedCompanies = pickRandomItems(companies, getRandomInt(3, 5));
+
+    // 현재 선택 기업 1개
+    favorites.push({
+      userId: user.id,
+      companyId: selectedCompanies[0].id,
+      isActive: true,
+      lastSelectedAt: new Date(),
+    });
+
+    // 이전 선택 기업들
+    for (let i = 1; i < selectedCompanies.length; i++) {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - i);
+
+      favorites.push({
+        userId: user.id,
+        companyId: selectedCompanies[i].id,
+        isActive: false,
+        lastSelectedAt: pastDate,
+      });
+    }
+  }
+
+  await prisma.favorite.createMany({
+    data: favorites,
+    skipDuplicates: true,
+  });
+
+  //////////////////////////////////////////////////
+  // Comparison 생성
+  // 유저당 1~5개 기업 선택
+  //////////////////////////////////////////////////
+  const comparisons = [];
+
+  for (const user of createdUsers) {
+    const selectedCompanies = pickRandomItems(companies, getRandomInt(1, 5));
+
+    for (const company of selectedCompanies) {
+      comparisons.push({
+        userId: user.id,
+        companyId: company.id,
+      });
+    }
+  }
+
+  await prisma.comparison.createMany({
+    data: comparisons,
+    skipDuplicates: true,
+  });
+
+  console.log(`✅ User 생성 완료: ${createdUsers.length}명`);
+  console.log(`✅ Investment 생성 완료: ${investments.length}개`);
+  console.log(`✅ Favorite 생성 완료: ${favorites.length}개`);
+  console.log(`✅ Comparison 생성 완료: ${comparisons.length}개`);
 }
 
 main()
