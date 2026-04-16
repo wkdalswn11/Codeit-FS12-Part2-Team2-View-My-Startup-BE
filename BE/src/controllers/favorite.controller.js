@@ -18,8 +18,8 @@ export const addFavoriteController = async (req, res) => {
 export const getFavoritesController = async (req, res) => {
   try {
     const userId = Number(req.params.userId);
-    const companyIds = await getFavoritesService(userId);
-    res.status(200).json({ data: companyIds });
+    const favorites = await getFavoritesService(userId);
+    res.status(200).json({ data: favorites.data });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

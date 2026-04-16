@@ -1,4 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import {
+  companySummarySelect,
+  mapCompanySummary,
+} from "../utils/companySummary";
 
 const prisma = new PrismaClient();
 
@@ -57,17 +61,17 @@ export const addFavoriteService = async (userId, companyId) => {
 };
 
 export const getFavoritesService = async (userId) => {
-  const companyIds = await prisma.favorite.findMany({
+  const favorites = await prisma.favorite.findMany({
     where: {
       userId,
       isActive: true,
     },
-    select: {
-      companyId: true,
-    },
+    select: companySummarySelect,
   });
 
-  return companyIds.map((company) => company.companyId);
+  const data = favorites.map(mapCompanySummary);
+
+  return { data };
 };
 
 export const deleteFavoriteService = async (userId, companyId) => {
@@ -98,7 +102,7 @@ export const getLastFavoriteService = async (userId) => {
     prisma.favorite.findMany({
       where: { userId, isActive: false },
       orderBy: { lastSelectedAt: "desc" },
-      include: { company: true },
+      select: companySummarySelect,
       take: 5,
     }),
 
@@ -107,13 +111,7 @@ export const getLastFavoriteService = async (userId) => {
     }),
   ]);
 
-  const data = favorites.map((fav) => {
-    return {
-      logo: fav.company.logo,
-      name: fav.company.name,
-      category: fav.company.categoryName,
-    };
-  });
+  const data = favorites.map(mapCompanySummary);
 
   return { data, total };
 };
