@@ -71,6 +71,18 @@ export const getFavoritesService = async (userId) => {
 };
 
 export const deleteFavoriteService = async (userId, companyId) => {
+  const favorite = await prisma.favorite.findUnique({
+    where: {
+      userId_companyId: { userId, companyId },
+    },
+  });
+
+  if (!favorite) {
+    const error = new Error("존재하지 않는 나의 기업입니다.");
+    error.status = 404;
+    throw error;
+  }
+
   await prisma.favorite.update({
     where: {
       userId_companyId: { userId, companyId },
