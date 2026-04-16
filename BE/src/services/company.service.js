@@ -1,16 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import { buildPaginationMeta, getPagination } from "../utils/pagination";
 
 const prisma = new PrismaClient();
 
 export const getCompaniesService = async (query) => {
-  const page = Math.max(Number(query.page) || 1, 1);
-  const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 50);
   const keyword = query.keyword || "";
   const ids = query.ids
     ? query.ids.split(",").map((id) => Number(id.trim()))
     : [];
 
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = getPagination(query);
 
   let where = {};
 
@@ -61,12 +60,61 @@ export const getCompaniesService = async (query) => {
     };
   });
 
-  const meta = {
-    page,
-    limit,
-    total,
-    totalPages: Math.ceil(total / limit),
+  const meta = buildPaginationMeta(page, limit, total);
+
+  return { data, meta };
+};
+
+export const getCompanyByIdService = async (companyId) => {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+  });
+
+  if (!company) {
+    const error = new Error("존재하지 않는 기업입니다");
+    error.status = 404;
+    throw error;
+  }
+
+  return {
+    data: {
+      id: company.id,
+      logo: company.logo,
+      name: company.name,
+      category: company.categoryName,
+      description: company.description,
+      revenue: company.revenue,
+      employeeCount: company.employeeCount,
+      baseInvestment: company.baseInvestment,
+    },
   };
+};
+
+export const getCompanyInvestmentsService = async (companyId, query) => {
+  const { page, limit, offset } = getPagination(query);
+  const [investmentList, total] = await Promise.all([
+    prisma.investment.findMany({
+      where: { companyId },
+      include: { user: true },
+      orderBy: { amount: "desc" },
+      skip: offset,
+      take: limit,
+    }),
+    prisma.investment.count({
+      where: { companyId },
+    }),
+  ]);
+
+  const data = investmentList.map((inv, index) => {
+    return {
+      userName: inv.user?.name ?? null,
+      amount: inv.amount,
+      comment: inv.comment,
+      rank: offset + index + 1,
+    };
+  });
+
+  const meta = buildPaginationMeta(page, limit, total);
 
   return { data, meta };
 };
