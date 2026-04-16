@@ -58,6 +58,8 @@ model Company {
 
   baseInvestment Int      @default(0) // 실제 투자금 (고정)
   siteInvestment Int      @default(0) // 사이트 투자금 (유저 투자 누적)
+  favoriteCount  Int      @default(0) // 관심기업 수
+  compareCount   Int      @default(0) // 비교기업 수
 
   investments Investment[]
   favorites   Favorite[]

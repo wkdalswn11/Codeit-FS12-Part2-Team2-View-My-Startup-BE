@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Company" ADD COLUMN     "compareCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "favoriteCount" INTEGER NOT NULL DEFAULT 0;
