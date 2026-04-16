@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { buildPaginationMeta, getPagination } from "../utils/pagination";
+import { buildPaginationMeta, getPagination } from "../utils/pagination.js";
 
 const prisma = new PrismaClient();
 
@@ -86,6 +86,7 @@ export const getCompanyByIdService = async (companyId) => {
       revenue: company.revenue,
       employeeCount: company.employeeCount,
       baseInvestment: company.baseInvestment,
+      siteInvestment: company.siteInvestment,
     },
   };
 };
