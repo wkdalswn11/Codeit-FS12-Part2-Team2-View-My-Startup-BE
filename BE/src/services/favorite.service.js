@@ -18,46 +18,57 @@ export const addFavoriteService = async (userId, companyId) => {
     throw error;
   }
 
-  await prisma.favorite.updateMany({
-    where: {
-      userId,
-      isActive: true,
-    },
-    data: {
-      isActive: false,
-    },
-  });
-
-  const existing = await prisma.favorite.findUnique({
-    where: {
-      userId_companyId: {
-        userId,
-        companyId,
-      },
-    },
-  });
-
-  if (existing) {
-    await prisma.favorite.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.favorite.updateMany({
       where: {
-        userId_companyId: { userId, companyId },
-      },
-      data: {
-        isActive: true,
-        lastSelectedAt: new Date(),
-      },
-    });
-  } else {
-    await prisma.favorite.create({
-      data: {
         userId,
-        companyId,
         isActive: true,
       },
+      data: {
+        isActive: false,
+      },
     });
-  }
 
-  return company;
+    const existing = await tx.favorite.findUnique({
+      where: {
+        userId_companyId: {
+          userId,
+          companyId,
+        },
+      },
+    });
+
+    if (existing) {
+      await tx.favorite.update({
+        where: {
+          userId_companyId: { userId, companyId },
+        },
+        data: {
+          isActive: true,
+          lastSelectedAt: new Date(),
+        },
+      });
+    } else {
+      await tx.favorite.create({
+        data: {
+          userId,
+          companyId,
+          isActive: true,
+        },
+      });
+
+      await tx.company.update({
+        where: {
+          id: companyId,
+        },
+        data: {
+          favoriteCount: { increment: 1 },
+        },
+      });
+    }
+  });
+
+  return { message: "나의 기업이 선택 되었습니다." };
 };
 
 export const getFavoritesService = async (userId) => {

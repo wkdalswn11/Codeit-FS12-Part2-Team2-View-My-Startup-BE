@@ -19,7 +19,7 @@ export const getFavoritesController = async (req, res) => {
   try {
     const userId = Number(req.params.userId);
     const favorites = await getFavoritesService(userId);
-    res.status(200).json({ data: favorites.data });
+    res.status(200).json({ message: favorites.message });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
