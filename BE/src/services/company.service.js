@@ -27,6 +27,8 @@ export const getCompaniesService = async (query) => {
     siteInvestment_asc: { siteInvestment: "asc" },
     favoriteCount_desc: { favoriteCount: "desc" },
     favoriteCount_asc: { favoriteCount: "asc" },
+    compareCount_desc: { compareCount: "desc" },
+    compareCount_asc: { compareCount: "asc" },
   };
 
   const sort = sortOrder[query.sort] || sortOrder.revenue_desc;
