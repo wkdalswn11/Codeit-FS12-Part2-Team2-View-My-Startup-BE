@@ -73,3 +73,25 @@ export const getComparesService = async (userId) => {
 
   return { data };
 };
+
+export const deleteCompareService = async (userId, companyId) => {
+  const existing = await prisma.comparison.findUnique({
+    where: {
+      userId_companyId: {
+        userId,
+        companyId,
+      },
+    },
+  });
+
+  if (!existing) {
+    const error = new Error("선택한 비교 기업이 없습니다.");
+    error.status = 404;
+    throw error;
+  }
+  await prisma.comparison.delete({
+    where: {
+      userId_companyId: { userId, companyId },
+    },
+  });
+};

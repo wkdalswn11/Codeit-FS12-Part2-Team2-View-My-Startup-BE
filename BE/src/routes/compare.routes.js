@@ -1,5 +1,9 @@
 import express from "express";
-import { addComparesController } from "../controllers/compare.controller.js";
+import {
+  addComparesController,
+  getComparesController,
+  deleteCompareController,
+} from "../controllers/compare.controller.js";
 
 const router = express.Router({ mergeParams: true });
 
