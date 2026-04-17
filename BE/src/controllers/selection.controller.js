@@ -1,3 +1,5 @@
+import { resetSelectionsService } from "../services/selection.service.js";
+
 export const resetSelectionsController = async (req, res) => {
   try {
     const userId = Number(req.params.userId);
