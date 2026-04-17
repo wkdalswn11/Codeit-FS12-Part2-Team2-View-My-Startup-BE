@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import {
   companySummarySelect,
   mapCompanySummary,
-} from "../utils/companySummary";
+} from "../utils/companySummary.js";
 
 const prisma = new PrismaClient();
 
