@@ -5,7 +5,7 @@ import compareRouter from "./routes/compare.routes.js";
 
 const PORT = 8080;
 app.use("/companies", companyRouter);
-app.use("/favorite", favoriteRouter);
+app.use("/users/:userId/favorites", favoriteRouter);
 app.use("/compare", compareRouter);
 
 app.listen(PORT, () => {
