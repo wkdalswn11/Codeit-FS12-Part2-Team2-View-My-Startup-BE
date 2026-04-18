@@ -66,6 +66,13 @@ export const addFavoriteService = async (userId, companyId) => {
         },
       });
     }
+
+    await tx.comparison.deleteMany({
+      where: {
+        userId,
+        companyId,
+      },
+    });
   });
 
   return { message: "나의 기업이 선택 되었습니다." };
