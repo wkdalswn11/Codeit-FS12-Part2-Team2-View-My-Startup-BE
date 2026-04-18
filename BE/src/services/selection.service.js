@@ -7,7 +7,7 @@ import { companySortOrder } from "../utils/sort.js";
 
 const prisma = new PrismaClient();
 
-export const resetSelectionsService = async (userId, query) => {
+export const resetSelectionsService = async (userId) => {
   await prisma.$transaction(async (tx) => {
     await tx.favorite.updateMany({
       where: {
@@ -25,7 +25,7 @@ export const resetSelectionsService = async (userId, query) => {
   });
 };
 
-export const getSelectionsService = async (userId) => {
+export const getSelectionsService = async (userId, query) => {
   const [favorite, compares] = await Promise.all([
     prisma.favorite.findFirst({
       where: { userId, isActive: true },
@@ -116,7 +116,7 @@ export const getMyCompanyRankingService = async (userId, query) => {
       employeeCount: company.employeeCount,
       baseInvestment: company.baseInvestment,
       rank: start + index + 1,
-      isSelected: company.id === favorite.id,
+      isSelected: company.id === favorite.companyId,
     };
   });
 
