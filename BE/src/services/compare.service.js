@@ -18,6 +18,16 @@ export const addComparesService = async (userId, companyId) => {
     throw error;
   }
 
+  const favorite = await prisma.favorite.findFirst({
+    where: { userId, isActive: true },
+  });
+
+  if (favorite && favorite.companyId === companyId) {
+    const error = new Error("나의 기업은 선택할 수 없습니다.");
+    error.status = 400;
+    throw error;
+  }
+
   const existing = await prisma.comparison.findUnique({
     where: {
       userId_companyId: {
