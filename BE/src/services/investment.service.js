@@ -26,6 +26,21 @@ export const investmentService = async (userId, body) => {
     throw error;
   }
 
+  const existing = await prisma.investment.findUnique({
+    where: {
+      userId_companyId: {
+        userId,
+        companyId: favorite.companyId,
+      },
+    },
+  });
+
+  if (existing) {
+    const error = new Error("이미 해당 기업에 투자했습니다.");
+    error.status = 409;
+    throw error;
+  }
+
   await prisma.$transaction(async (tx) => {
     await tx.investment.create({
       data: {
