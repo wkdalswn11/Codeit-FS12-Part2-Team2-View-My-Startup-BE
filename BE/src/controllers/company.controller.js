@@ -1,4 +1,5 @@
 import {
+  addCompanyInvestmentService,
   getCompaniesService,
   getCompanyByIdService,
   getCompanyInvestmentsService,
@@ -35,5 +36,20 @@ export const getCompanyInvestmentsController = async (req, res) => {
       .json({ data: companyInvestments.data, meta: companyInvestments.meta });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const addCompanyInvestmentController = async (req, res, next) => {
+  try {
+    const companyId = Number(req.params.companyId);
+
+    if (Number.isNaN(companyId)) {
+      return res.status(400).json({ error: "유효한 ID가 아닙니다." });
+    }
+
+    const investment = await addCompanyInvestmentService(companyId, req.body);
+    res.status(201).json({ message: investment.message });
+  } catch (error) {
+    next(error);
   }
 };

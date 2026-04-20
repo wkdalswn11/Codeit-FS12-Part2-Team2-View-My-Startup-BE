@@ -12,7 +12,7 @@ app.use("/companies", companyRouter);
 app.use("/users/:userId/favorites", favoriteRouter);
 app.use("/users/:userId/compares", compareRouter);
 app.use("/users/:userId/selections", selectionRouter);
-app.use("/users/:userId/investment", investmentRouter);
+app.use("/users/:userId/investments", investmentRouter);
 
 app.use(errorHandler);
 
