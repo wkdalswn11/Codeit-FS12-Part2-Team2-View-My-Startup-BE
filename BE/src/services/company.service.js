@@ -96,16 +96,30 @@ export const getCompanyByIdService = async (companyId) => {
 
 export const getCompanyInvestmentsService = async (companyId, query) => {
   const { page, limit, offset } = getPagination(query);
+  const keyword = query.keyword || "";
+
+  let where = {
+    companyId,
+  };
+
+  if (keyword) {
+    where.user = {
+      name: {
+        contains: keyword,
+        mode: "insensitive",
+      },
+    };
+  }
   const [investmentList, total] = await Promise.all([
     prisma.investment.findMany({
-      where: { companyId },
+      where,
       include: { user: true },
       orderBy: { amount: "desc" },
       skip: offset,
       take: limit,
     }),
     prisma.investment.count({
-      where: { companyId },
+      where,
     }),
   ]);
 
