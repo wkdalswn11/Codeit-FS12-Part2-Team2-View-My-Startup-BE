@@ -5,26 +5,26 @@ import {
   getCompanyInvestmentsService,
 } from "../services/company.service.js";
 
-export const getCompaniesController = async (req, res) => {
+export const getCompaniesController = async (req, res, next) => {
   try {
     const companies = await getCompaniesService(req.query);
     res.status(200).json({ data: companies.data, meta: companies.meta });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
-export const getCompanyByIdController = async (req, res) => {
+export const getCompanyByIdController = async (req, res, next) => {
   try {
     const companyId = Number(req.params.companyId);
     const company = await getCompanyByIdService(companyId);
     res.status(200).json({ data: company.data });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
-export const getCompanyInvestmentsController = async (req, res) => {
+export const getCompanyInvestmentsController = async (req, res, next) => {
   try {
     const companyId = Number(req.params.companyId);
     const companyInvestments = await getCompanyInvestmentsService(
@@ -35,7 +35,7 @@ export const getCompanyInvestmentsController = async (req, res) => {
       .status(200)
       .json({ data: companyInvestments.data, meta: companyInvestments.meta });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -44,7 +44,9 @@ export const addCompanyInvestmentController = async (req, res, next) => {
     const companyId = Number(req.params.companyId);
 
     if (Number.isNaN(companyId)) {
-      return res.status(400).json({ error: "유효한 ID가 아닙니다." });
+      const error = new Error("유효한 ID가 아닙니다.");
+      error.status = 400;
+      throw error;
     }
 
     const investment = await addCompanyInvestmentService(companyId, req.body);

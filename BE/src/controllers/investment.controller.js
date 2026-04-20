@@ -7,9 +7,13 @@ import {
 export const addFavoriteInvestmentController = async (req, res, next) => {
   try {
     const userId = Number(req.params.userId);
+
     if (Number.isNaN(userId)) {
-      return res.status(400).json({ error: "유효한 ID가 아닙니다." });
+      const error = new Error("유효한 ID가 아닙니다.");
+      error.status = 400;
+      throw error;
     }
+
     const investment = await addFavoriteInvestmentService(userId, req.body);
     res.status(201).json({ message: investment.message });
   } catch (error) {
@@ -20,13 +24,21 @@ export const addFavoriteInvestmentController = async (req, res, next) => {
 export const updateInvestmentController = async (req, res, next) => {
   try {
     const userId = Number(req.params.userId);
+
     if (Number.isNaN(userId)) {
-      return res.status(400).json({ error: "유효한 ID가 아닙니다." });
+      const error = new Error("유효한 ID가 아닙니다.");
+      error.status = 400;
+      throw error;
     }
+
     const investmentId = Number(req.params.investmentId);
+
     if (Number.isNaN(investmentId)) {
-      return res.status(400).json({ error: "유효한 투자 내역이 아닙니다." });
+      const error = new Error("유효한 투자 내역이 아닙니다.");
+      error.status = 400;
+      throw error;
     }
+
     const updateInvestment = await updateInvestmentService(
       userId,
       investmentId,
@@ -41,13 +53,21 @@ export const updateInvestmentController = async (req, res, next) => {
 export const deleteInvestmentController = async (req, res, next) => {
   try {
     const userId = Number(req.params.userId);
+
     if (Number.isNaN(userId)) {
-      return res.status(400).json({ error: "유효한 ID가 아닙니다." });
+      const error = new Error("유효한 ID가 아닙니다.");
+      error.status = 400;
+      throw error;
     }
+
     const investmentId = Number(req.params.investmentId);
+
     if (Number.isNaN(investmentId)) {
-      return res.status(400).json({ error: "유효한 투자 내역이 아닙니다." });
+      const error = new Error("유효한 투자 내역이 아닙니다.");
+      error.status = 400;
+      throw error;
     }
+
     const deleteInvestment = await deleteInvestmentService(
       userId,
       investmentId,
