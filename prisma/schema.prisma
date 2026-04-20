@@ -3,13 +3,78 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // mysql / sqlite 등 사용 환경에 맞게 변경
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-/////////////////////////////////////////////////
-// ENUM
-/////////////////////////////////////////////////
+model User {
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  comparisons Comparison[]
+  favorites   Favorite[]
+  investments Investment[]
+}
+
+model Company {
+  id             Int             @id @default(autoincrement())
+  name           String
+  businessNumber String          @unique
+  address        String
+  description    String
+  revenue        Int
+  employeeCount  Int
+  categoryName   CompanyCategory
+  logo           String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  baseInvestment Int             @default(0)
+  siteInvestment Int             @default(0)
+  compareCount   Int             @default(0)
+  favoriteCount  Int             @default(0)
+  comparisons    Comparison[]
+  favorites      Favorite[]
+  investments    Investment[]
+}
+
+model Investment {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  companyId Int
+  amount    Int
+  comment   String
+  status    InvestmentStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  company   Company          @relation(fields: [companyId], references: [id])
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@unique([userId, companyId])
+}
+
+model Favorite {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  companyId      Int
+  createdAt      DateTime @default(now())
+  isActive       Boolean  @default(false)
+  lastSelectedAt DateTime @default(now())
+  company        Company  @relation(fields: [companyId], references: [id])
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, companyId])
+}
+
+model Comparison {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  companyId Int
+  createdAt DateTime @default(now())
+  company   Company  @relation(fields: [companyId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, companyId])
+}
 
 enum CompanyCategory {
   IT
@@ -24,110 +89,4 @@ enum InvestmentStatus {
   PENDING
   APPROVED
   REJECTED
-}
-
-/////////////////////////////////////////////////
-// USER
-/////////////////////////////////////////////////
-
-model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
-
-  investments Investment[]
-  favorites   Favorite[]
-  comparisons Comparison[]
-}
-
-/////////////////////////////////////////////////
-// COMPANY
-/////////////////////////////////////////////////
-
-model Company {
-  id             Int      @id @default(autoincrement())
-  name           String
-  businessNumber String   @unique
-  address        String
-  description    String
-  revenue        Int
-  employeeCount  Int
-  categoryName   CompanyCategory
-
-  logo           String?
-
-  baseInvestment Int      @default(0) // 실제 투자금 (고정)
-  siteInvestment Int      @default(0) // 사이트 투자금 (유저 투자 누적)
-  favoriteCount  Int      @default(0) // 관심기업 수
-  compareCount   Int      @default(0) // 비교기업 수
-
-  investments Investment[]
-  favorites   Favorite[]
-  comparisons Comparison[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-/////////////////////////////////////////////////
-// INVESTMENT
-/////////////////////////////////////////////////
-
-model Investment {
-  id        Int      @id @default(autoincrement())
-
-  userId    Int
-  companyId Int
-
-  user      User    @relation(fields: [userId], references: [id])
-  company   Company @relation(fields: [companyId], references: [id])
-
-  amount    Int
-  comment   String
-
-  status    InvestmentStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, companyId])
-}
-
-/////////////////////////////////////////////////
-// FAVORITE (즐겨찾기)
-/////////////////////////////////////////////////
-
-model Favorite {
-  id             Int      @id @default(autoincrement())
-
-  userId         Int
-  companyId      Int
-
-  user           User     @relation(fields: [userId], references: [id])
-  company        Company  @relation(fields: [companyId], references: [id])
-
-  isActive       Boolean  @default(false)
-  lastSelectedAt DateTime @default(now())
-
-  createdAt      DateTime @default(now())
-
-  @@unique([userId, companyId]) // 중복 방지
-}
-
-/////////////////////////////////////////////////
-// COMPARISON (비교 기업)
-/////////////////////////////////////////////////
-
-model Comparison {
-  id        Int @id @default(autoincrement())
-
-  userId    Int
-  companyId Int
-
-  user      User    @relation(fields: [userId], references: [id])
-  company   Company @relation(fields: [companyId], references: [id])
-
-  createdAt DateTime @default(now())
-
-  @@unique([userId, companyId]) // 중복 선택 방지
 }
