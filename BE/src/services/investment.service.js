@@ -137,5 +137,3 @@ export const deleteInvestmentService = async (userId, investmentId) => {
   });
   return { message: "투자 내역이 삭제되었습니다." };
 };
-
-export const addInvestmentService = async () => {};
