@@ -3,6 +3,7 @@ import {
   getSelectionsService,
   resetSelectionsService,
 } from "../services/selection.service.js";
+import { companySortOrder } from "../utils/sort.js";
 
 export const resetSelectionsController = async (req, res, next) => {
   try {
