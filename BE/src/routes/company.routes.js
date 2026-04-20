@@ -9,5 +9,6 @@ const router = express.Router();
 router.get("/", getCompaniesController);
 router.get("/:companyId", getCompanyByIdController);
 router.get("/:companyId/investments", getCompanyInvestmentsController);
+router.post("/:companyId/investments");
 
 export default router;

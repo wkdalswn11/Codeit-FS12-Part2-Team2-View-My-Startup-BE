@@ -123,3 +123,62 @@ export const getCompanyInvestmentsService = async (companyId, query) => {
 
   return { data, meta };
 };
+
+export const addCompanyInvestmentService = async (companyId, body) => {
+  const userId = Number(body.userId);
+  const amount = Number(body.amount);
+
+  if (Number.isNaN(userId)) {
+    const error = new Error("유효한 userId가 아닙니다.");
+    error.status = 400;
+    throw error;
+  }
+  if (Number.isNaN(amount) || amount <= 0) {
+    const error = new Error("유효한 투자 금액이 아닙니다.");
+    error.status = 400;
+    throw error;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    const error = new Error("유저가 존재하지 않습니다.");
+    error.status = 404;
+    throw error;
+  }
+
+  const existing = await prisma.investment.findFirst({
+    where: {
+      userId,
+      companyId,
+    },
+  });
+
+  if (existing) {
+    const error = new Error("이미 투자한 기업입니다.");
+    error.status = 409;
+    throw error;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.investment.create({
+      data: {
+        companyId,
+        userId,
+        amount,
+        comment: body.comment,
+      },
+    });
+
+    await tx.company.update({
+      where: { id: companyId },
+      data: {
+        siteInvestment: { increment: amount },
+      },
+    });
+  });
+
+  return { message: "투자가 완료되었어요!" };
+};

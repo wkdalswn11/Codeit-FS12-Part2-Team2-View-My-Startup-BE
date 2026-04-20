@@ -64,9 +64,9 @@ export const addFavoriteInvestmentService = async (userId, body) => {
   return { message: "투자가 완료되었어요!" };
 };
 
-export const updateInvestmentService = async (investmentId, body) => {
+export const updateInvestmentService = async (userId, investmentId, body) => {
   const existing = await prisma.investment.findUnique({
-    where: { id: investmentId },
+    where: { id: investmentId, userId },
   });
 
   if (!existing) {
@@ -105,9 +105,9 @@ export const updateInvestmentService = async (investmentId, body) => {
   return { message: "투자 내역이 수정되었습니다." };
 };
 
-export const deleteInvestmentService = async (investmentId) => {
+export const deleteInvestmentService = async (userId, investmentId) => {
   const existing = await prisma.investment.findUnique({
-    where: { id: investmentId },
+    where: { id: investmentId, userId },
   });
 
   if (!existing) {
@@ -120,6 +120,7 @@ export const deleteInvestmentService = async (investmentId) => {
     await tx.investment.delete({
       where: {
         id: investmentId,
+        userId,
       },
     });
 
