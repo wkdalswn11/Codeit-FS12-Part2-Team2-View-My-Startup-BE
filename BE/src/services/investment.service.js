@@ -65,7 +65,7 @@ export const addFavoriteInvestmentService = async (userId, body) => {
 };
 
 export const updateInvestmentService = async (userId, investmentId, body) => {
-  const existing = await prisma.investment.findUnique({
+  const existing = await prisma.investment.findFirst({
     where: { id: investmentId, userId },
   });
 
@@ -106,7 +106,7 @@ export const updateInvestmentService = async (userId, investmentId, body) => {
 };
 
 export const deleteInvestmentService = async (userId, investmentId) => {
-  const existing = await prisma.investment.findUnique({
+  const existing = await prisma.investment.findFirst({
     where: { id: investmentId, userId },
   });
 
@@ -120,7 +120,6 @@ export const deleteInvestmentService = async (userId, investmentId) => {
     await tx.investment.delete({
       where: {
         id: investmentId,
-        userId,
       },
     });
 
