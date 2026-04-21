@@ -8,7 +8,8 @@ import authRouter from "./routes/auth.routes.js";
 
 import { errorHandler } from "./middlewares/error.middleware.js";
 
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
+
 app.use("/companies", companyRouter);
 app.use("/users/:userId/favorites", favoriteRouter);
 app.use("/users/:userId/compares", compareRouter);
