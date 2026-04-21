@@ -5,7 +5,6 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon BE/src/server.js",
     "start": "node BE/src/server.js"
   },
   "prisma": {
