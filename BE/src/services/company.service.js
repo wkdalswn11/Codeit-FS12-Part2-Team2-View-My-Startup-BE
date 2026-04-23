@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 export const getCompaniesService = async (query) => {
   const keyword = query.keyword || "";
+  const category = query.category;
   const { page, limit, offset } = getPagination(query);
 
   let where = {};
@@ -14,6 +15,10 @@ export const getCompaniesService = async (query) => {
       contains: keyword,
       mode: "insensitive",
     };
+  }
+
+  if (category) {
+    where.categoryName = category;
   }
 
   const sortOrder = {
