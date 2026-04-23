@@ -140,17 +140,22 @@ export const getCompanyInvestmentsService = async (companyId, query) => {
 
 export const addCompanyInvestmentService = async (companyId, body) => {
   const userId = Number(body.userId);
-  const amount = Number(body.amount);
 
   if (Number.isNaN(userId)) {
     const error = new Error("유효한 userId가 아닙니다.");
     error.status = 400;
     throw error;
   }
-  if (Number.isNaN(amount) || amount <= 0) {
-    const error = new Error("유효한 투자 금액이 아닙니다.");
-    error.status = 400;
-    throw error;
+  const amount = BigInt(body.amount);
+
+  try {
+    amount = BigInt(body.amount);
+  } catch {
+    throw new Error("유효한 투자 금액이 아닙니다.");
+  }
+
+  if (amount <= 0n) {
+    throw new Error("유효한 투자 금액이 아닙니다.");
   }
 
   const user = await prisma.user.findUnique({

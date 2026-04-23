@@ -43,24 +43,17 @@ export const getInvestmentController = async (req, res, next) => {
 export const updateInvestmentController = async (req, res, next) => {
   try {
     const userId = Number(req.params.userId);
+    const companyId = Number(req.params.companyId);
 
-    if (Number.isNaN(userId)) {
+    if (Number.isNaN(userId) || Number.isNaN(companyId)) {
       const error = new Error("유효한 ID가 아닙니다.");
-      error.status = 400;
-      throw error;
-    }
-
-    const investmentId = Number(req.params.investmentId);
-
-    if (Number.isNaN(investmentId)) {
-      const error = new Error("유효한 투자 내역이 아닙니다.");
       error.status = 400;
       throw error;
     }
 
     const updateInvestment = await updateInvestmentService(
       userId,
-      investmentId,
+      companyId,
       req.body,
     );
     res.status(200).json({ message: updateInvestment.message });
@@ -72,25 +65,15 @@ export const updateInvestmentController = async (req, res, next) => {
 export const deleteInvestmentController = async (req, res, next) => {
   try {
     const userId = Number(req.params.userId);
+    const companyId = Number(req.params.companyId);
 
-    if (Number.isNaN(userId)) {
+    if (Number.isNaN(userId) || Number.isNaN(companyId)) {
       const error = new Error("유효한 ID가 아닙니다.");
       error.status = 400;
       throw error;
     }
 
-    const investmentId = Number(req.params.investmentId);
-
-    if (Number.isNaN(investmentId)) {
-      const error = new Error("유효한 투자 내역이 아닙니다.");
-      error.status = 400;
-      throw error;
-    }
-
-    const deleteInvestment = await deleteInvestmentService(
-      userId,
-      investmentId,
-    );
+    const deleteInvestment = await deleteInvestmentService(userId, companyId);
     res.status(200).json({ message: deleteInvestment.message });
   } catch (error) {
     next(error);
