@@ -29,7 +29,7 @@ model Company {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   baseInvestment Int             @default(0)
-  siteInvestment Int             @default(0)
+  siteInvestment BigInt          @default(0)
   compareCount   Int             @default(0)
   favoriteCount  Int             @default(0)
   comparisons    Comparison[]
@@ -41,7 +41,7 @@ model Investment {
   id        Int              @id @default(autoincrement())
   userId    Int
   companyId Int
-  amount    Int
+  amount    BigInt
   comment   String
   status    InvestmentStatus @default(PENDING)
   createdAt DateTime         @default(now())
