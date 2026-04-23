@@ -64,6 +64,34 @@ export const addFavoriteInvestmentService = async (userId, body) => {
   return { message: "투자가 완료되었어요!" };
 };
 
+export const getInvestmentService = async (userId, companyId) => {
+  const investment = await prisma.investment.findUnique({
+    where: {
+      userId_companyId: {
+        userId: userId,
+        companyId: companyId,
+      },
+    },
+    select: {
+      amount: true,
+      comment: true,
+    },
+  });
+
+  if (!investment) {
+    const error = new Error("투자 내역이 없습니다.");
+    error.status = 404;
+    throw error;
+  }
+
+  return {
+    data: {
+      amount: investment.amount,
+      comment: investment.comment,
+    },
+  };
+};
+
 export const updateInvestmentService = async (userId, investmentId, body) => {
   const existing = await prisma.investment.findFirst({
     where: { id: investmentId, userId },
