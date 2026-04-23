@@ -68,8 +68,8 @@ export const getInvestmentService = async (userId, companyId) => {
   const investment = await prisma.investment.findUnique({
     where: {
       userId_companyId: {
-        userId: userId,
-        companyId: companyId,
+        userId,
+        companyId,
       },
     },
     select: {
@@ -85,10 +85,8 @@ export const getInvestmentService = async (userId, companyId) => {
   }
 
   return {
-    data: {
-      amount: investment.amount,
-      comment: investment.comment,
-    },
+    amount: investment.amount,
+    comment: investment.comment,
   };
 };
 

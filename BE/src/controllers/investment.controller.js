@@ -34,7 +34,7 @@ export const getInvestmentController = async (req, res, next) => {
     }
 
     const investment = await getInvestmentService(userId, companyId);
-    res.status(200).json({ data: investment.data });
+    res.status(200).json({ data: investment });
   } catch (error) {
     next(error);
   }
