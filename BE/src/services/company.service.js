@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { buildPaginationMeta, getPagination } from "../utils/pagination.js";
+import { compare } from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -196,3 +197,83 @@ export const addCompanyInvestmentService = async (companyId, body) => {
 
   return { message: "투자가 완료되었어요!" };
 };
+
+export const getTrendingService = async (query) => {
+  const { page, limit, offset } = getPagination(query);
+  const Days = new Date();
+  const daysMap = {
+    Today: 1,
+    "7days": 7,
+    Month: 30,
+  };
+
+  const selectDays = daysMap[query.days] || 7;
+
+  Days.setDate(Days.getDate() - selectDays);
+
+  const grouped = await prisma.investment.groupBy({
+    by: ["companyId"],
+    where: {
+      createdAt: {
+        gte: Days,
+      },
+    },
+  });
+
+  const total = grouped.length;
+
+  const Trending = await prisma.investment.groupBy({
+    by: ["companyId"],
+    where: {
+      createdAt: {
+        gte: Days,
+      }
+    },
+    _count: {
+      companyId: true,
+    },
+    orderBy: {
+      _count: {
+        companyId: "desc",
+      },
+    },
+    take: limit,
+    skip: offset,
+  });
+
+  const companyIds = Trending.map((t) => t.companyId);
+
+  const companies = await prisma.company.findMany({
+    where: {
+      id: { in: companyIds },
+    },
+    select: {
+      id: true,
+      logo: true,
+      name: true,
+      categoryName: true,
+      description: true,
+      siteInvestment: true,
+    },
+  });
+
+  const data = Trending.map((t, index) => {
+    const company = companies.find((c) => c.id === t.companyId)
+    if (!company) return null;
+    return {
+      id: company.id,
+      logo: company.logo,
+      name: company.name,
+      category: company.categoryName,
+      description: company.description,
+      siteInvestment: company.siteInvestment,
+      rank: offset + index + 1,
+      recentInvestmentCount: t._count.companyId,
+    };
+  });
+
+  const meta = buildPaginationMeta(page, limit, total)
+
+  return { data, meta }
+}
+

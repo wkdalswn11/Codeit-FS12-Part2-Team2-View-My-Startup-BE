@@ -1,3 +1,4 @@
+import "dotenv/config";
 import app from "./app.js";
 import companyRouter from "./routes/company.routes.js";
 import favoriteRouter from "./routes/favorite.routes.js";

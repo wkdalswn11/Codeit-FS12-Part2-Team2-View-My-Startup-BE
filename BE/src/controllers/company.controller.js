@@ -3,6 +3,7 @@ import {
   getCompaniesService,
   getCompanyByIdService,
   getCompanyInvestmentsService,
+  getTrendingService,
 } from "../services/company.service.js";
 
 export const getCompaniesController = async (req, res, next) => {
@@ -55,3 +56,16 @@ export const addCompanyInvestmentController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getTrendingController = async (req, res, next) => {
+  try {
+    const Trending = await getTrendingService(req.query);
+
+    res.status(200).json({
+      data: Trending.data,
+      meta: Trending.meta,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
