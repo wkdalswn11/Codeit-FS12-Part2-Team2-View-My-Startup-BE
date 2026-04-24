@@ -17,13 +17,16 @@ export const addFavoriteInvestmentService = async (userId, body) => {
     error.status = 404;
     throw error;
   }
+  let amount;
 
-  const amount = Number(body.amount);
+  try {
+    amount = BigInt(body.amount);
+  } catch {
+    throw new Error("유효한 투자 금액이 아닙니다.");
+  }
 
-  if (Number.isNaN(amount) || amount <= 0) {
-    const error = new Error("유효한 투자 금액이 아닙니다.");
-    error.status = 400;
-    throw error;
+  if (amount <= 0n) {
+    throw new Error("유효한 투자 금액이 아닙니다.");
   }
 
   const existing = await prisma.investment.findUnique({
@@ -64,9 +67,37 @@ export const addFavoriteInvestmentService = async (userId, body) => {
   return { message: "투자가 완료되었어요!" };
 };
 
-export const updateInvestmentService = async (userId, investmentId, body) => {
-  const existing = await prisma.investment.findFirst({
-    where: { id: investmentId, userId },
+export const getInvestmentService = async (userId, companyId) => {
+  const investment = await prisma.investment.findUnique({
+    where: {
+      userId_companyId: {
+        userId,
+        companyId,
+      },
+    },
+    select: {
+      amount: true,
+      comment: true,
+    },
+  });
+
+  if (!investment) {
+    const error = new Error("투자 내역이 없습니다.");
+    error.status = 404;
+    throw error;
+  }
+
+  return {
+    amount: investment.amount,
+    comment: investment.comment,
+  };
+};
+
+export const updateInvestmentService = async (userId, companyId, body) => {
+  const existing = await prisma.investment.findUnique({
+    where: {
+      userId_companyId: { userId, companyId },
+    },
   });
 
   if (!existing) {
@@ -75,19 +106,25 @@ export const updateInvestmentService = async (userId, investmentId, body) => {
     throw error;
   }
 
-  const amount = Number(body.amount);
+  let amount;
 
-  if (Number.isNaN(amount) || amount <= 0) {
-    const error = new Error("유효한 투자 금액이 아닙니다.");
-    error.status = 400;
-    throw error;
+  try {
+    amount = BigInt(body.amount);
+  } catch {
+    throw new Error("유효한 투자 금액이 아닙니다.");
+  }
+
+  if (amount <= 0n) {
+    throw new Error("유효한 투자 금액이 아닙니다.");
   }
 
   const diff = amount - existing.amount;
 
   await prisma.$transaction(async (tx) => {
     await tx.investment.update({
-      where: { id: investmentId },
+      where: {
+        userId_companyId: { userId, companyId },
+      },
       data: {
         amount,
         comment: body.comment,
@@ -95,7 +132,7 @@ export const updateInvestmentService = async (userId, investmentId, body) => {
     });
 
     await tx.company.update({
-      where: { id: existing.companyId },
+      where: { id: companyId },
       data: {
         siteInvestment: { increment: diff },
       },
@@ -105,9 +142,14 @@ export const updateInvestmentService = async (userId, investmentId, body) => {
   return { message: "투자 내역이 수정되었습니다." };
 };
 
-export const deleteInvestmentService = async (userId, investmentId) => {
-  const existing = await prisma.investment.findFirst({
-    where: { id: investmentId, userId },
+export const deleteInvestmentService = async (userId, companyId) => {
+  const existing = await prisma.investment.findUnique({
+    where: {
+      userId_companyId: {
+        userId,
+        companyId,
+      },
+    },
   });
 
   if (!existing) {
@@ -119,13 +161,16 @@ export const deleteInvestmentService = async (userId, investmentId) => {
   await prisma.$transaction(async (tx) => {
     await tx.investment.delete({
       where: {
-        id: investmentId,
+        userId_companyId: {
+          userId,
+          companyId,
+        },
       },
     });
 
     await tx.company.update({
       where: {
-        id: existing.companyId,
+        id: companyId,
       },
       data: {
         siteInvestment: {
@@ -134,5 +179,6 @@ export const deleteInvestmentService = async (userId, investmentId) => {
       },
     });
   });
+
   return { message: "투자 내역이 삭제되었습니다." };
 };
