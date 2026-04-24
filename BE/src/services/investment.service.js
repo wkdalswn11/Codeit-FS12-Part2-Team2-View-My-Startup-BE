@@ -17,8 +17,7 @@ export const addFavoriteInvestmentService = async (userId, body) => {
     error.status = 404;
     throw error;
   }
-
-  const amount = BigInt(body.amount);
+  let amount;
 
   try {
     amount = BigInt(body.amount);
@@ -107,7 +106,7 @@ export const updateInvestmentService = async (userId, companyId, body) => {
     throw error;
   }
 
-  const amount = BigInt(body.amount);
+  let amount;
 
   try {
     amount = BigInt(body.amount);

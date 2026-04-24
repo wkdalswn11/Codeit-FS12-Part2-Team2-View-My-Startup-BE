@@ -151,7 +151,7 @@ export const addCompanyInvestmentService = async (companyId, body) => {
     error.status = 400;
     throw error;
   }
-  const amount = BigInt(body.amount);
+  let amount;
 
   try {
     amount = BigInt(body.amount);
