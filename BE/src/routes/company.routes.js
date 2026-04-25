@@ -7,9 +7,10 @@ import {
 } from "../controllers/company.controller.js";
 
 const router = express.Router();
+router.get("/trending")
 router.get("/", getCompaniesController);
-router.get("/:companyId", getCompanyByIdController);
 router.get("/:companyId/investments", getCompanyInvestmentsController);
 router.post("/:companyId/investments", addCompanyInvestmentController);
+router.get("/:companyId", getCompanyByIdController);
 
 export default router;
