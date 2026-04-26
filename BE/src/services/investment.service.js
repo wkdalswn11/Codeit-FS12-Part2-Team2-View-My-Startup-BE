@@ -88,7 +88,7 @@ export const getInvestmentService = async (userId, companyId) => {
   }
 
   return {
-    amount: investment.amount,
+    amount: investment.amount.toString(),
     comment: investment.comment,
   };
 };
@@ -118,7 +118,7 @@ export const updateInvestmentService = async (userId, companyId, body) => {
     throw new Error("유효한 투자 금액이 아닙니다.");
   }
 
-  const diff = amount - existing.amount;
+  const diff = amount - BigInt(existing.amount);
 
   await prisma.$transaction(async (tx) => {
     await tx.investment.update({
